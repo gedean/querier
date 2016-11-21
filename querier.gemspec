@@ -8,6 +8,7 @@ Gem::Specification.new do |s|
   s.email         = 'gedean.dias@gmail.com'
   s.files         = Dir["README.md", "lib/**/*"]
   s.require_paths = ["lib"]
+  s.required_ruby_version = '>= 2.0.0'  
   s.homepage      = 'https://github.com/gedean/querier'
   s.license       = 'MIT'
 end
