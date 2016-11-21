@@ -19,4 +19,4 @@ WHERE
     end
 end
 
-# UserQuerier.new(user_name: foo, active: true).execute
+# UserQuerier.new(user_name: 'foo', active: true).execute
