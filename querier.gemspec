@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'querier'
-  s.version       = '0.0.1'
+  s.version       = '0.0.2'
   s.date          = '2016-11-20'
   s.summary       = "Active Record Querier"
   s.description   = "Active Record queries with variable number of params"
