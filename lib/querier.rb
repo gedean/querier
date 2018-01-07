@@ -1,5 +1,4 @@
 class Querier
-  
   PARAM_NAME_INDEX = 0
   PARAM_VALUE_INDEX = 1
 
@@ -22,6 +21,11 @@ class Querier
 
   def to_sql
     fill_query_params(query_template: @query_template, query_params: @query_params)
+  end
+
+  def to_file
+    file_name = "querier #{Time.now.strftime "[%d-%m-%Y]-[%Hh %Mm %Ss]"}.sql"
+    File.open("tmp/#{file_name}", 'w') {|f| f << self.to_sql}
   end
 
   private
