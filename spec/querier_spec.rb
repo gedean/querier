@@ -1,11 +1,11 @@
 require_relative '../lib/querier'
 
 TEST_USER_NAME = 'foo'
-VALID_QUERY = "SELECT * FROM users	WHERE name = '#{TEST_USER_NAME}' AND active = true"
+VALID_QUERY = "SELECT * FROM users WHERE name = '#{TEST_USER_NAME}' AND active = true"
 
 class UserQuerier < Querier
   def initialize user_name:, active:
-    @query_template = "SELECT * FROM users	WHERE name = {?user_name} AND active = {?active}"
+    @query_template = "SELECT * FROM users WHERE name = {?user_name} AND active = {?active}"
     super
   end
 end
