@@ -28,6 +28,17 @@ class Querier
     File.open("tmp/#{file_name}", 'w') {|f| f << self.to_sql}
   end
 
+  def field_group_and_count field_name:, sort_element_index: nil, reverse_sort: true
+    count_result = @cached_results.group_by(&field_name).map {|k, v| [k, v.count]}
+    
+    unless sort_element_index.nil?
+      count_result = count_result.sort_by {|el| el[sort_element_index]}
+      count_result.reverse! if reverse_sort.eql? true
+    end
+    
+    count_result
+  end    
+
   private
   
   def get_param_value raw_query_param
@@ -47,15 +58,4 @@ class Querier
 
     query
   end
-
-  def field_group_and_count field_name:, sort_element_index: nil, reverse_sort: true
-    count_result = @cached_results.group_by(&field_name).map {|k, v| [k, v.count]}
-    
-    unless sort_element_index.nil?
-      count_result = count_result.sort_by {|el| el[sort_element_index]}
-      count_result.reverse! if reverse_sort.eql? true
-    end
-    
-    count_result
-  end  
 end
