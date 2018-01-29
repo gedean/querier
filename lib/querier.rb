@@ -2,21 +2,34 @@ class Querier
   PARAM_NAME_INDEX = 0
   PARAM_VALUE_INDEX = 1
 
-  attr_reader :query_template, :query_params
+  attr_reader :query_execution_count, :query_template, :query_params
   
   def initialize **template_query_params
+    @query_execution_count = 0
     @query_params = template_query_params.dup
   end
 
   def execute
-    ActiveRecord::Base.connection.select_all fill_query_params(query_template: @query_template, query_params: @query_params)
+    @query_execution_count += 1
+    @execution_cached_result = ActiveRecord::Base.connection.select_all(fill_query_params(query_template: @query_template, query_params: @query_params))
+    @execution_cached_result.map! {|record| record.symbolize_keys!}
   end   
 
+  def cached_result format: :hash
+    raise 'query not executed yet' if @query_execution_count.eql?(0)
+    
+    case format.to_s
+      when 'hash' 
+        @execution_cached_result
+      when 'open_struct'
+          hash_to_open_struct(dataset: @execution_cached_result)
+      else
+          raise 'invalid value type'
+    end
+  end
+  
   def structured_results
-    query_results = self.execute
-    structured_results = [] 
-    query_results.each {|query_result| structured_results << OpenStruct.new(query_result.symbolize_keys!)}
-    structured_results
+    hash_to_open_struct dataset: self.execute
   end  
 
   def to_sql
@@ -29,7 +42,7 @@ class Querier
   end
 
   def field_group_and_count field_name:, sort_element_index: nil, reverse_sort: true
-    count_result = @cached_results.group_by(&field_name).map {|k, v| [k, v.count]}
+    count_result = self.cached_results(format: :open_struct).group_by(&field_name).map {|k, v| [k, v.count]}
     
     unless sort_element_index.nil?
       count_result = count_result.sort_by {|el| el[sort_element_index]}
@@ -40,6 +53,10 @@ class Querier
   end    
 
   private
+
+  def hash_to_open_struct dataset:
+    dataset.map {|record| OpenStruct.new(record.symbolize_keys!)}
+  end  
   
   def get_param_value raw_query_param
     # where's String#quote when we need it?
