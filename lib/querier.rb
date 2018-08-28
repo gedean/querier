@@ -58,9 +58,9 @@ class Querier
     dataset.map {|record| OpenStruct.new(record.symbolize_keys!)}
   end  
   
-  def get_param_value raw_query_param
+  def get_param_value raw_query_param, quotefy_param=true
     # where's String#quote when we need it?
-    raw_query_param.class.eql?(String) ? "'#{raw_query_param.to_s}'" : raw_query_param.to_s
+    raw_query_param.class.eql?(String) && quotefy_param ? "'#{raw_query_param.to_s}'" : raw_query_param.to_s
   end
 
   def fill_query_params query_template:, query_params:
@@ -68,9 +68,9 @@ class Querier
     
     query_params.each do |query_param|
       query_param_name = query_param[PARAM_NAME_INDEX].to_s
-      query_param_value = get_param_value(query_param[PARAM_VALUE_INDEX])
 
-      query.gsub! /{\?#{query_param_name}}/, query_param_value
+      query.gsub! /{\?#{query_param_name}}/, get_param_value(query_param[PARAM_VALUE_INDEX], true)
+      query.gsub! /{\?#{query_param_name}\/no_quote}/, get_param_value(query_param[PARAM_VALUE_INDEX], false)
     end
 
     query
