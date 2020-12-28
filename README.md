@@ -1,20 +1,8 @@
 # querier
 
 # class UserQuerier < Querier
-    QUERY_TEMPLATE = <<-END_OF_QUERY_TEMPLATE
-
-SELECT
-  *
-FROM
-  users
-WHERE
-  name = {?user_name}
-  AND active = {?active}
-
-  END_OF_QUERY_TEMPLATE
-
     def initialize user_name:, active:
-        @query_template = QUERY_TEMPLATE
+        @query_template = "SELECT * FROM users WHERE name = ${user_name} AND active = ${active}"
         super
     end
 end

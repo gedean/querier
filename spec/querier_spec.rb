@@ -11,6 +11,13 @@ class UserQuerier < Querier
   end
 end
 
+class YearsQuerier < Querier
+  def initialize(start_year:, end_year:)
+    @query_template = 'SELECT ${end_year} - ${start_year} AS diff'
+    super
+  end
+end
+
 describe Querier do
   before :each do
     @user_querier = UserQuerier.new(user_name: TEST_USER_NAME, active: true, ages: TEST_AGES)
@@ -24,5 +31,15 @@ describe Querier do
 
   it 'Returns a valid query' do
     expect(@user_querier.to_sql).to eq VALID_QUERY
+  end
+end
+
+describe 'Query Execution' do
+  before :each do
+    @years_query = YearsQuerier.new(start_year: 2020, end_year: 1992)
+  end
+
+  it 'Returns difference between years' do
+    expect(@years_query.execute).to eq 28
   end
 end
