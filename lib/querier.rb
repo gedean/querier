@@ -12,7 +12,7 @@ class Querier
   def execute
     @query_execution_count += 1
     @execution_cached_result = ActiveRecord::Base.connection.select_all(fill_query_params(query_template: @query_template, query_params: @query_params))
-    @execution_cached_result.map! {|record| record.symbolize_keys!}
+    @execution_cached_result = execution_cached_result.map! { |record| record.symbolize_keys! }
   end   
 
   def cached_result format: :hash
@@ -58,7 +58,7 @@ class Querier
     dataset.map {|record| OpenStruct.new(record.symbolize_keys!)}
   end  
   
-  def get_param_value raw_query_param, quotefy_param=true
+  def get_param_value raw_query_param:, quotefy_param: true
     # where's String#quote when we need it?
     raw_query_param.class.eql?(String) && quotefy_param ? "'#{raw_query_param.to_s}'" : raw_query_param.to_s
   end
@@ -69,8 +69,13 @@ class Querier
     query_params.each do |query_param|
       query_param_name = query_param[PARAM_NAME_INDEX].to_s
 
-      query.gsub! /{\?#{query_param_name}}/, get_param_value(query_param[PARAM_VALUE_INDEX], true)
-      query.gsub! /{\?#{query_param_name}\/no_quote}/, get_param_value(query_param[PARAM_VALUE_INDEX], false)
+      query.gsub!(/\${#{query_param_name}}/,
+                  get_param_value(raw_query_param: query_param[PARAM_VALUE_INDEX], 
+                                  quotefy_param: true))
+
+      query.gsub!(/\${#{query_param_name}\/no_quote}/,
+                  get_param_value(raw_query_param: query_param[PARAM_VALUE_INDEX],
+                                  quotefy_param: false))
     end
 
     query
