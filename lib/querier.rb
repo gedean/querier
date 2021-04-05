@@ -2,16 +2,24 @@ class Querier
   PARAM_NAME_INDEX = 0
   PARAM_VALUE_INDEX = 1
 
+  @active_record_class = ActiveRecord::Base
+  # based on rubocop's tips at: https://www.rubydoc.info/gems/rubocop/RuboCop/Cop/Style/ClassVars
+  # solution here: https://www.ruby-lang.org/en/documentation/faq/8/
+  class << self
+    attr_accessor :active_record_class
+  end
+
   attr_reader :query_execution_count, :query_template, :query_params
 
   def initialize(**template_query_params)
+    @active_record_class = self.class.active_record_class || self.class.superclass.active_record_class
     @query_execution_count = 0
     @query_params = template_query_params.dup
   end
 
   def execute
     @query_execution_count += 1
-    @execution_cached_result = ActiveRecord::Base.connection.select_all(fill_query_params(query_template: @query_template,
+    @execution_cached_result = @active_record_class.connection.select_all(fill_query_params(query_template: @query_template,
                                                                                           query_params: @query_params)).map(&:symbolize_keys!)
   end
 
