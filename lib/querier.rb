@@ -11,7 +11,7 @@ class Querier
 
   attr_reader :query_execution_count, :query_template, :query_params
 
-  def initialize(**template_query_params)
+  def initialize(template_query_params)
     @active_record_class = self.class.active_record_class || self.class.superclass.active_record_class
     @query_execution_count = 0
     @query_params = template_query_params.dup
@@ -20,7 +20,7 @@ class Querier
   def execute
     @query_execution_count += 1
     @execution_cached_result = @active_record_class.connection.select_all(fill_query_params(query_template: @query_template,
-                                                                                          query_params: @query_params)).map(&:symbolize_keys!)
+                                                                                         query_params: @query_params)).map(&:symbolize_keys!)
   end
 
   def cached_result(format: :hash)
@@ -46,11 +46,11 @@ class Querier
 
   def to_file
     file_name = "querier #{Time.now.strftime '[%d-%m-%Y]-[%Hh %Mm %Ss]'}.sql"
-    File.open("tmp/#{file_name}", 'w') { |f| f << to_sql }
+    File.write "tmp/#{file_name}", to_sql
   end
 
   def field_group_and_count(field_name:, sort_element_index: nil, reverse_sort: true)
-    count_result = cached_results(format: :open_struct).group_by(&field_name).map { |k, v| [k, v.count] }
+    count_result = cached_result(format: :open_struct).group_by(&field_name).map { |k, v| [k, v.count] }
 
     unless sort_element_index.nil?
       count_result = count_result.sort_by { |el| el[sort_element_index] }
@@ -74,7 +74,7 @@ class Querier
   def fill_query_params(query_template:, query_params:)
     query = query_template.dup
 
-    query_params.each do |query_param|
+    query_params.each_pair do |query_param|
       query_param_name = query_param[PARAM_NAME_INDEX].to_s
 
       query.gsub!(/\${#{query_param_name}}/,

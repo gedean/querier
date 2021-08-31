@@ -1,3 +1,4 @@
+require 'active_record'
 require_relative '../lib/querier'
 
 TEST_USER_NAME = 'foo'.freeze
