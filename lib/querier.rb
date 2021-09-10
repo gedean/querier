@@ -1,3 +1,5 @@
+require 'active_record'
+
 class Querier
   PARAM_NAME_INDEX = 0
   PARAM_VALUE_INDEX = 1
@@ -11,10 +13,10 @@ class Querier
 
   attr_reader :query_execution_count, :query_template, :query_params
 
-  def initialize(template_query_params)
+  def initialize(template_query_params = {})
     @active_record_class = self.class.active_record_class || self.class.superclass.active_record_class
     @query_execution_count = 0
-    @query_params = template_query_params.dup
+    @query_params = template_query_params
   end
 
   def execute
@@ -72,7 +74,7 @@ class Querier
   end
 
   def fill_query_params(query_template:, query_params:)
-    query = query_template.dup
+    query = query_template
 
     query_params.each_pair do |query_param|
       query_param_name = query_param[PARAM_NAME_INDEX].to_s
