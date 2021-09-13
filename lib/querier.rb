@@ -23,25 +23,50 @@ class Querier
     @active_record_class.connection.execute(@query)
   end
 
+  def exec_query
+    decorate_dataset_format(@active_record_class.connection.exec_query(@query))
+  end
+
   def select_all
-    result = @active_record_class.connection.select_all(@query)
+    decorate_dataset_format(@active_record_class.connection.select_all(@query))
+  end
 
-    def result.as_hash
-      map(&:symbolize_keys!)
-    end
+  def select_one
+    @active_record_class.connection.select_one(@query)
+  end
 
-    def result.as_struct
-      map { |record| OpenStruct.new(record) }
-    end
+  def select_values
+    @active_record_class.connection.select_values(@query)
+  end
 
-    result
+  def select_rows
+    @active_record_class.connection.select_rows(@query)
+  end
+
+  def select_value
+    @active_record_class.connection.select_value(@query)
   end
 
   private
 
+  def decorate_dataset_format(dataset)
+    def dataset.as_hash
+      map(&:symbolize_keys)
+    end
+
+    def dataset.as_struct
+      map { |record| OpenStruct.new(record) }
+    end
+
+    dataset
+  end
+
   def get_param_value(raw_query_param:, quotefy_param: true)
-    # where's String#quote when we need it?
-    raw_query_param.instance_of?(String) && quotefy_param ? "'#{raw_query_param.to_s}'" : raw_query_param.to_s
+    if raw_query_param.instance_of?(String) && quotefy_param
+      @active_record_class.connection.quote(raw_query_param.to_s)
+    else
+      raw_query_param.to_s
+    end
   end
 
   def fill_query_params
