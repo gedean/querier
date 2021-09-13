@@ -10,4 +10,4 @@ super
 > > 
 > end
 
-> UserQuerier.new(user_name: 'foo', active: true).execute
+> UserQuerier.new(user_name: 'foo', active: true).select_all.to_struct
