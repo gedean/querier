@@ -35,6 +35,10 @@ class Querier
     @active_record_class.connection.select_one(@query)
   end
 
+  def select_sole
+    @active_record_class.connection.select_sole(@query)
+  end
+
   def select_values
     @active_record_class.connection.select_values(@query)
   end
