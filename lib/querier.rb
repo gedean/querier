@@ -2,7 +2,7 @@ require 'active_record'
 
 module QuerierDatasetExtensions
   def as_hash = map(&:symbolize_keys)
-  def as_struct = map { |record| OpenStruct.new(record) }
+  def as_struct = map { OpenStruct.new(it) }
 end
 
 class Querier
@@ -32,16 +32,10 @@ class Querier
   private
 
   def fill_query_params
-    query = @query_template.dup
-
-    @query_params.each do |param_name, param_value|
-      placeholder = "${#{param_name}}"
-      placeholder_no_quote = "${#{param_name}/no_quote}"
-  
-      query.gsub!(placeholder, @active_record_class.connection.quote(param_value.to_s))
-      query.gsub!(placeholder_no_quote, param_value.to_s)
+    @query_params.inject(@query_template.dup) do |q, (param_name, param_value)|
+      q.gsub!("${#{param_name}}", @active_record_class.connection.quote(param_value.to_s))
+      q.gsub!("${#{param_name}/no_quote}", param_value.to_s)
+      q
     end
-  
-    query
   end
 end
