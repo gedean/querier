@@ -1,2 +1,5 @@
 *.gem
+.ruby-lsp/
+spec/examples.txt
 tmp/*
+build_and_install.sh
